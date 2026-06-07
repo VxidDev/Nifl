@@ -1,7 +1,10 @@
+#include "../include/install.h"
+
 #include <stdio.h>
 
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 const char *PACKAGE_NAME = NULL;
 
@@ -43,11 +46,23 @@ void parseArguments(const int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
+  if (geteuid() != 0) {
+    printf("Error: Nifl required root privileges for system install\n");
+    return 1;
+  }
+
   parseArguments(argc, argv);
   
   if (!PACKAGE_NAME) return 0;
 
   printf("Package Name: %s\n", PACKAGE_NAME);
+  
+  int err = install(PACKAGE_NAME);
+
+  if (err != 0) {
+    printf("Error: failed to install package \"%s\"\n", PACKAGE_NAME);
+    return err;
+  }
 
   return 0;
 }
